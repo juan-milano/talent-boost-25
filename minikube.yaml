@@ -1,0 +1,7 @@
+kubectl apply -f prometheus-minikube.yaml
+
+kubectl get pods
+
+minikube service prometheus-service --url
+
+minikube service grafana-service --url
