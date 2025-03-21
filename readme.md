@@ -454,3 +454,119 @@ Ejemplo: Crear una variable namespace para filtrar métricas por namespace.
 ##### Exportación y Backup:
 Exporta dashboards como JSON para respaldarlos o compartirlos.
 Usa herramientas como grafana-backup para automatizar backups.
+
+---
+#### ¿Qué es Helm?
+
+Helm es un administrador de paquetes para Kubernetes. Piensa en él como apt o yum para Kubernetes. Permite definir, instalar y actualizar aplicaciones complejas en un clúster de Kubernetes de manera sencilla y repetible. Helm utiliza "charts" para definir estas aplicaciones. Un chart es una colección de archivos que describen un conjunto de recursos de Kubernetes.
+
+####  Beneficios de usar Helm:
+
+- Simplicidad: Despliega aplicaciones complejas con un solo comando.
+- Repetibilidad: Garantiza la misma configuración en diferentes entornos.
+- Versionamiento: Realiza seguimiento de las versiones de tus aplicaciones y facilita la reversión a versiones anteriores.
+- Reutilización: Comparte y reutiliza charts creados por la comunidad o por tu equipo.
+- Centralización: Gestiona y cataloga tus aplicaciones en un repositorio (opcional).
+
+#### Linux
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get update
+sudo apt-get install helm
+
+####  macOS:
+brew install helm
+helm version
+
+#### Conceptos Fundamentales de Helm
+
+- Chart: Un paquete de Helm. Contiene toda la información necesaria para desplegar una aplicación, herramienta o servicio en Kubernetes.
+
+- Release: Una instancia específica de un chart desplegado en un clúster de Kubernetes. Un mismo chart puede ser desplegado múltiples veces con diferentes configuraciones, generando múltiples releases.
+
+- Repository: Un lugar donde se almacenan y comparten charts. El repositorio oficial de Helm es https://artifacthub.io/ pero puedes usar repositorios privados.
+
+- Values: Variables que configuran un chart. Se definen en el archivo values.yaml dentro de un chart y pueden ser modificadas al instalar o actualizar una release.
+
+- Templates: Archivos YAML que definen los recursos de Kubernetes (Deployments, Services, ConfigMaps, etc.). Los templates usan el lenguaje de plantillas Go para generar los archivos YAML finales, combinando la definición base con los valores configurados.
+
+#### Comandos Básicos de Helm
+
+- helm search repo: Busca charts en un repositorio. Ejemplo: helm search repo bitnami
+- helm pull: Descarga un chart desde un repositorio. Ejemplo: helm pull bitnami/nginx
+- helm install: Instala un chart en el clúster de Kubernetes. Ejemplo: helm install my-nginx bitnami/nginx
+- helm uninstall: Desinstala una release. Ejemplo: helm uninstall my-nginx
+- helm upgrade: Actualiza una release existente. Ejemplo: helm upgrade my-nginx bitnami/nginx
+- helm rollback: Revierte una release a una versión anterior. Ejemplo: helm rollback my-nginx 1 (revierte a la versión 1)
+- helm status: Muestra el estado de una release. Ejemplo: helm status my-nginx
+- helm list: Lista todas las releases desplegadas en el clúster.
+- helm create: Crea un nuevo chart. Ejemplo: helm create my-app
+
+
+#### Creación de un Chart Básico
+
+`helm create talent-boost-app`
+
+`cd talent-boost-app`
+
+```
+talent-boost-app/
+├── Chart.yaml        # Información sobre el chart
+├── templates/        # Archivos de templates (YAML para recursos de Kubernetes)
+│   ├── deployment.yaml
+│   ├── _helpers.tpl    # Funciones helper para templates
+│   ├── ingress.yaml
+│   ├── NOTES.txt       # Notas para el usuario después de la instalación
+│   └── service.yaml
+└── values.yaml         # Valores por defecto para la configuración
+```
+
+`helm install my-app ./talent-boost-app`
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app
+          image: my-image:latest  # Imagen Docker
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
+
+```
+
+`values.yaml`
+
+```
+replicaCount: 1
+image:
+  repository: my-docker-image
+  tag: latest
+service:
+  port: 80
+  targetPort: 8080
+  type: LoadBalancer
+```
